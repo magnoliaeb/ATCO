@@ -1,0 +1,42 @@
+@import 'partials/_my-variabls.scss';
+@import 'partials/_reset.scss';
+
+th {
+  text-transform: uppercase !important;
+  color: $secondary !important;
+  font-weight: 600 !important;
+}
+.page-title {
+  font-size: $fs-3xl;
+  font-weight: 700;
+}
+body,
+main {
+  min-height: 100vh !important;
+  overflow-x: hidden;
+
+  // background-color: rebeccapurple !important;
+}
+
+.v-container {
+  max-width: 92% !important;
+  margin: 0 auto;
+  padding: 0 !important;
+  // max-width: 1600px !important;
+}
+
+@media screen and (min-width: $sm) {
+  .v-container {
+    max-width: 95% !important;
+  }
+}
+@media screen and (min-width: $lg) {
+  .v-container {
+    max-width: 90% !important;
+  }
+}
+@media screen and (min-width: $xl) {
+  .v-container {
+    // max-width: 70% !important;
+  }
+}
