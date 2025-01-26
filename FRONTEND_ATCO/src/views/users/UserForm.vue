@@ -1,77 +1,128 @@
 <script setup>
-import { useField, useForm } from "vee-validate";
-import registerSchema from "@/schemas/registerSchema";
-import Swal from "sweetalert2";
-import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useField, useForm } from "vee-validate";
+import Swal from "sweetalert2";
+import registerSchema from "@/schemas/registerSchema";
+import userAPI from "@/api/userAPI";
 
+// Opciones de roles y estado
+const roles = [
+    { text: "Vendedor", value: "vendedor" },
+    // { text: "Administrador", value: "admin" },
+    { text: "Ingeniero", value: "ingeniero" }
+];
+
+const statusItems = [
+    { text: "Activo", value: true },
+    { text: "Inactivo", value: false }
+];
+
+// Router
 const router = useRouter();
 const route = useRoute();
 
-// store
-const { handleSubmit, handleReset } = useForm({
+// Estado del formulario
+const editedUserId = ref({});
+const titleForm = computed(() => (editedUserId.value ? "Editar usuario" : "Crear usuario"));
+
+// Configuración del formulario
+const { handleSubmit, handleReset, setValues } = useForm({
     validationSchema: registerSchema,
     initialValues: {
         name: "Sonrisita",
         email: "sonrisita@example.com",
         password: "password",
         confirmPassword: "password",
+        role: "vendedor",
+        status: true
     }
 });
 
-const editedUser = ref({});
-const titleForm = computed(() => {
-    return editedUser.value.id ? "Editar usuario" : "Crear usuario";
-});
-
-onMounted(() => {
-    if (route.params.id) {
-        // Editar usuario
-        editedUser.value.id = route.params.id;
-    }
-});
-
-const password = useField("password");
-const email = useField("email");
+// Campos del formulario
 const name = useField("name");
+const email = useField("email");
+const password = useField("password");
 const confirmPassword = useField("confirmPassword");
+const role = useField("role");
+const status = useField("status");
 
-const onSubmit = handleSubmit(async ({ confirmPassword, ...values }) => {
-    // Guardar usuario (crear o editar)
-    const saveUser = () => {
-        if (editedUser.value.id) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Usuario actualizado',
-                text: 'El usuario ha sido actualizado correctamente',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                router.push({ name: 'users' });
+// Cargar usuario si existe
+const { id } = route.params;
+onMounted(() => {
+    if (id) {
+        fetchUser(id);
+    } else {
+        resetForm();
+    }
+});
+
+// Obtener datos del usuario
+const fetchUser = (id) => {
+    userAPI.getUserById(id).then((response) => {
+        // console.log(response.data);
+        if (response.success) {
+            editedUserId.value = response.data.id;
+            setValues({
+                name: response.data.name,
+                email: response.data.email,
+                password: response.data.password,
+                confirmPassword: response.data.password,
+                role: response.data.role,
+                status: response.data.status
             });
         } else {
-            Swal.fire({
-                icon: 'success',
-                title: 'Usuario creado',
-                text: 'El usuario ha sido creado correctamente',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                router.push({ name: 'users' });
-            });
-            resetForm();
+            router.push({ name: "users" });
         }
-    };
+    });
+};
+
+// Guardar usuario (crear o actualizar)
+const saveUser = (values) => {
+    if (editedUserId.value) {
+        userAPI.updateUser(editedUserId.value, values).then((response) => {
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Usuario actualizado",
+                    text: "El usuario ha sido actualizado correctamente",
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    router.push({ name: "users" });
+                });
+            }
+        });
+    } else {
+        userAPI.createUser(values).then((response) => {
+            console.log(response);
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Usuario creado",
+                    text: "El usuario ha sido creado correctamente",
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    router.push({ name: "users" });
+                });
+            }
+        });
+    }
+};
+
+// Enviar formulario
+const onSubmit = handleSubmit(async ({ confirmPassword, ...values }) => {
+    saveUser(values);
 });
 
-function updateUser(user) {
-    editedUser.value = { ...user };
-}
-
+// Resetear formulario
 function resetForm() {
+    editedUserId.value = null;
     handleReset();
 }
 </script>
+
 
 <template>
     <div class="">
@@ -91,6 +142,17 @@ function resetForm() {
                             <VTextField id="email" label="Correo Electrónico" variant="filled"
                                 class="rounded-lg overflow-hidden" v-model="email.value.value" type="email"
                                 :error-messages="email.errorMessage.value"></VTextField>
+                        </VCol>
+                        <VCol cols="12" md="6">
+                            <VSelect id="role" label="Rol" variant="filled" class="rounded-lg overflow-hidden"
+                                v-model="role.value.value" :items="roles" item-value="value" item-title="text"
+                                :error-messages="role.errorMessage.value"></VSelect>
+                        </VCol>
+                        <VCol cols="12" md="6">
+                            <VSelect id="status" label="Estado" variant="filled" class="rounded-lg overflow-hidden"
+                                v-model="status.value.value" :items="statusItems" item-value="value" item-title="text"
+                                :error-messages="status.errorMessage.value"></VSelect>
+
                         </VCol>
                         <VCol cols="12">
                             <VTextField id="password" label="Contraseña" variant="filled"

@@ -7,21 +7,20 @@ import { User } from '../models/index.js'
 import errorHandle from '../utils/error.js'
 
 import { tokenSign } from '../utils/token.js'
+import { Op } from 'sequelize'
 
 export default {
   createUser: async (req, res) => {
+    const { error } = registerSchema.validate(req.body)
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+        error: 'VALIDATION_ERROR'
+      })
+    }
+
     try {
-      const { error } = registerSchema.validate(req.body)
-
-      if (error) {
-        return res.status(400).json({
-          success: false,
-          message: error.details[0].message,
-          error: 'VALIDATION_ERROR'
-        })
-      }
-
-      console.log(req.body.email)
       // verificar que el usuario no este registrado
       const existUser = await User.findOne({ where: { email: req.body.email } })
 
@@ -68,7 +67,7 @@ export default {
         })
       }
 
-      if (body.email && body.email !== user.email) {
+      if (body.email !== user.email) {
         const existUser = await User.findOne({ where: { email: body.email } })
         if (existUser) {
           return res.status(400).json({
@@ -111,8 +110,7 @@ export default {
     }
   },
   updateStatus: async (req, res) => {
-    const { id } = req.user
-    const { status } = req.body
+    const { id } = req.params
     try {
       const user = await User.findByPk(id)
 
@@ -123,14 +121,23 @@ export default {
           error: 'USER_NOT_FOUND'
         })
       }
+      console.log(user)
+      console.log('estado')
 
-      user.status = status
+      if (user.status) {
+        user.status = false
+      } else {
+        user.status = true
+      }
+
       await user.save()
 
       res.status(200).json({
         success: true,
         message: 'El estado del usuario ha sido actualizado correctamente',
-        data: {}
+        data: {
+          status: user.status
+        }
       })
     } catch (error) {
       errorHandle(error, req, res)
@@ -179,11 +186,44 @@ export default {
   },
   getUsers: async (req, res) => {
     try {
-      const users = await User.findAll()
+      const search = req.query.search || ''
+      // Paginación
+      const page = req.query.page || 1
+      const perPage = 10
+      const offset = (page - 1) * perPage
+
+      // Filtrado
+      const where = {}
+
+      if (search) {
+        where[Op.or] = [
+          { name: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } }
+        ]
+      }
+
+      const users = await User.findAll({
+        attributes: { exclude: ['password', 'token'] },
+        limit: perPage,
+        offset,
+        order: [['id', 'DESC']],
+        where
+      })
+
+      const totalUsers = await User.count({ where })
+      const totalPages = Math.ceil(totalUsers / perPage)
+
+      const pagination = {
+        currentPage: page,
+        perPage,
+        totalUsers,
+        totalPages
+      }
+
       res.status(200).json({
         success: true,
         message: 'Usuarios obtenidos correctamente',
-        data: users
+        data: { users, pagination }
       })
     } catch (error) {
       errorHandle(error, req, res)

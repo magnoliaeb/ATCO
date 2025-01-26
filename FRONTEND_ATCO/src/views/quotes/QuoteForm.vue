@@ -4,35 +4,20 @@ import quotationSchema from "@/schemas/quotationSchema"; // Esquema de validaci�
 import Swal from "sweetalert2";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
+import { accessoryOptions, areas, departaments, items, modelOptions, negotiationTypes, peopleNumbers, usageTypes } from "../../data/catalogo";
 
 const router = useRouter();
 const route = useRoute();
-
-// Definimos las opciones de los select con los IDs asignados
-const negotiationTypes = [
-    { id: 1, label: 'Venta' },
-    { id: 2, label: 'Renta' },
-    { id: 3, label: 'Licitación' },
-    { id: 4, label: 'Otro' }
-];
-
-const departaments = [
-    { id: 1, label: 'Ventas' },
-    { id: 2, label: 'Compras' },
-    { id: 3, label: 'Producción' },
-    { id: 4, label: 'Logística' },
-    { id: 5, label: 'Recursos Humanos' }
-];
-
 
 // Definimos el formulario con validaciones y valores iniciales
 const { handleSubmit, handleReset } = useForm({
     validationSchema: quotationSchema,
     initialValues: {
         asesor: 'juanperez@example.com',
+        departament: null,  // Logística
         client: "",
         projectName: "",
-        departament: null,  // Logística
+        placeInstall: "",
         negotiationType: null, // Venta
         deliveryDate: "",
         biddingFile: "",
@@ -65,33 +50,28 @@ onMounted(() => {
         editedQuotation.value.id = route.params.id;
     }
 });
-
+// validaciones model
 const asesor = useField("asesor");
 const client = useField("client");
 const proyectName = useField("proyectName");
+const placeInstall = useField("placeInstall");
 const negotiationType = useField("negotiationType");
 const departament = useField("departament");
 const deliveryDate = useField("deliveryDate");
 const biddingFile = useField("biddingFile");
 const observations = useField("observations");
 
-
-
 // PASOS
 const step = ref(0);
 const selectionProduct = ref(null);
 
-// medidas
+const statusQuote = ref("cotizado");
+
 // si es unidad movil
 const selectedModel = ref(null);
 
-const modelOptions = ref([
-    { id: 1, label: 'Modelo 1' },
-    { id: 2, label: 'Modelo 2' },
-    { id: 3, label: 'Modelo 3' },
-    { id: 4, label: 'Modelo 4' },
-    { id: 5, label: 'Modelo 5' }
-]);
+
+
 // si es editficio prefabricado
 const selectedW = ref('');
 const quantitiesL = ref('');
@@ -115,62 +95,11 @@ const typeOfUse = ref('');
 const requiredAreas = ref([]);
 const numberOfPeople = ref(1);
 
-const usageTypes = ref([
-    { id: 1, label: 'Oficina' },
-    { id: 2, label: 'Dormitorios' },
-    { id: 3, label: 'Baños' },
-    { id: 4, label: 'Aulas' },
-    { id: 5, label: 'Consultorio' },
-    { id: 6, label: 'Otros' }
-]);
-const peopleNumbers = ref([
-    { id: 1, label: '1-5', },
-    { id: 2, label: '6-10', },
-    { id: 3, label: '11-20', },
-    { id: 4, label: '21-50', },
-    { id: 5, label: 'Más de 50', }
-])
-const items = ref([
-    {
-        id: 1,
-        label: 'Unidad Móvil',
-        icon: 'mdi-truck',
-    },
-    {
-        id: 2,
-        label: 'Edificio Prefabricado',
-        icon: 'mdi-home-modern',
-    },
-    {
-        id: 3,
-        label: 'Skid',
-        icon: 'mdi-car-traction-control',
-    },
-    {
-        id: 4,
-        label: 'Blox',
-        icon: 'mdi-cube',
-    },
-    {
-        id: 5,
-        label: 'Otro',
-        icon: 'mdi-shape-outline',
-    }
-])
 
-const areas = ref([
-    { id: 1, label: 'Oficinas comunes o privadas' },
-    { id: 2, label: 'Baños' },
-    { id: 3, label: 'Recepción' },
-    { id: 4, label: 'Dormitorio' },
-    { id: 5, label: 'Site para servidor' },
-    { id: 6, label: 'Cocineta' },
-    { id: 7, label: 'Almacén' },
-    { id: 8, label: 'Comedor' },
-    { id: 9, label: 'Area de maquinas' },
-    { id: 10, label: 'Laboratorio' },
-    { id: 11, label: 'Otros' },
-]);
+
+
+
+
 
 // Accessorios
 const airConditioning = ref('');
@@ -179,24 +108,7 @@ const interiorFinish = ref('');
 const selectedAccessories = ref([]);
 const extraAccessories = ref('');
 
-const accessoryOptions = [
-    { id: 1, label: 'Refrigerador' },
-    { id: 2, label: 'Extractor' },
-    { id: 3, label: 'Sillas' },
-    { id: 4, label: 'Accesorios de baños' },
-    { id: 5, label: 'Detector de humo' },
-    { id: 6, label: 'Lampara de plafon' },
-    { id: 7, label: 'Lampara de spot' },
-    { id: 8, label: 'Piso en rollo' },
-    { id: 9, label: 'Ventanales' },
-    { id: 10, label: 'Persianas' },
-    { id: 11, label: 'Calentador de agua' },
-    { id: 12, label: 'Hidroneumático' },
-    { id: 13, label: 'Generador eléctrico' },
-    { id: 14, label: 'Pantalla de TV' },
-    { id: 15, label: 'Protector de ventana' },
-    { id: 16, label: 'Otros' },
-];
+
 
 const onSubmit = handleSubmit(async (values) => {
     // Guardar cotización (crear o editar)
@@ -249,12 +161,29 @@ function prevStep() {
 <template>
     <section>
         <VRow>
-            <VCol cols="12" md="7">
+            <VCol cols="12" md="8">
                 <VCard class="pa-md-4 rounded-lg" flat>
                     <VCardText>
-                        <h1 class="page-title mb-3 mb-sm-6">
-                            {{ titleForm }}
-                        </h1>
+                        <VRow class="justify-space-between align-center">
+                            <VCol cols="12" md="auto">
+                                <h1 class="page-title mb-3 mb-sm-6">
+                                    {{ titleForm }}
+                                </h1>
+
+                            </VCol>
+                            <VCol cols="12" md="auto">
+                                <VChipGroup v-model="statusQuote" selected-class="bg-primary">
+                                    <VChip value="cotizado" variant="tonal" color="blue">Cotizado
+                                    </VChip>
+                                    <VChip value="aprobado" variant="tonal" color="green">Aprobado
+                                    </VChip>
+                                    <VChip value="rechazado" variant="tonal" color="red">Rechazado
+                                    </VChip>
+                                </VChipGroup>
+
+                            </VCol>
+
+                        </VRow>
 
                         <VForm @submit.prevent="onSubmit">
                             <VRow>
@@ -290,6 +219,13 @@ function prevStep() {
                                     <VTextField id="proyectName" label="Nombre del proyecto" variant="filled"
                                         class="rounded-lg overflow-hidden" v-model="proyectName.value.value" type="text"
                                         :error-messages="proyectName.errorMessage.value">
+                                    </VTextField>
+                                </VCol>
+                                <!-- Campo: lugar de instalacion -->
+                                <VCol cols="12" md="12">
+                                    <VTextField label="Lugar de instalación" variant="filled"
+                                        class="rounded-lg overflow-hidden" v-model="placeInstall.value.value"
+                                        type="text" :error-messages="placeInstall.errorMessage.value">
                                     </VTextField>
                                 </VCol>
 
@@ -467,9 +403,10 @@ function prevStep() {
                                                 </VCardText>
 
                                                 <v-card-actions>
-                                                    <v-btn v-if="selectionProduct === 1" variant="flat"
-                                                        :disabled="selectedModel === null"
-                                                        class="text-uppercase font-weight-bold" color="primary"
+                                                    <v-btn v-if="selectionProduct === 1 && selectedModel === null"
+                                                        variant="flat" :disabled="selectedModel === null"
+                                                        class="text-uppercase font-weight-bold"
+                                                        :color="selectedModel === null ? 'tertiary' : 'primary'"
                                                         elevation="0" size="large" @click="nextStep">Siguiente</v-btn>
                                                     <v-btn v-else variant="flat" class="text-uppercase font-weight-bold"
                                                         color="primary" elevation="0" size="large"
@@ -609,67 +546,7 @@ function prevStep() {
                 </VCard>
 
             </VCol>
-            <VCol cols="12" md="5">
-                <VCard class="pa-md-4 rounded-lg project-details" flat>
-                    <VCardTitle>
-                        <h2 class="font-weight-bold">Detalles del Proyecto</h2>
-                    </VCardTitle>
 
-                    <VCardText>
-                        <!-- Datos del Asesor -->
-                        <div class="mb-4">
-                            <h4 class="mb-2 font-weight-medium">Datos del Asesor</h4>
-                            <VRow>
-                                <VCol cols="12" md="6">
-                                    <p class="mb-1"><strong>Asesor:</strong> Maria Pérez</p>
-                                </VCol>
-                                <VCol cols="12" md="6">
-                                    <p class="mb-1"><strong>Departamento:</strong> Ventas</p>
-                                </VCol>
-                            </VRow>
-                        </div>
-
-                        <!-- Datos del Cliente -->
-                        <div class="mb-4">
-                            <h4 class="mb-2 font-weight-medium">Datos del Cliente</h4>
-                            <VRow>
-                                <VCol cols="12" md="6">
-                                    <!-- <p class="mb-1"><strong>Cliente:</strong> {{ values.client }}</p> -->
-                                    <!-- <p class="mb-1"><strong>Proyecto:</strong> {{ values.projectName }}</p> -->
-                                </VCol>
-                                <VCol cols="12" md="6">
-                                    <!-- <p class="mb-1"><strong>Departamento:</strong> {{ departaments.find(d => d.id ===
-                                        values.department)?.label }}</p> -->
-                                    <!-- <p class="mb-1"><strong>Tipo de Negociación:</strong> {{ negotiationTypes.find(n =>
-                                        n.id === values.negotiationType)?.label }}</p> -->
-                                </VCol>
-                            </VRow>
-                            <!-- <p class="mb-1"><strong>Observaciones:</strong> {{ values.observations || 'Ninguna' }}</p> -->
-                        </div>
-
-                        <!-- Datos del Proyecto -->
-                        <div>
-                            <h4 class="mb-2 font-weight-medium">Detalles del Proyecto</h4>
-                            <!-- <VRow>
-                                <VCol cols="12" md="6">
-                                    <p class="mb-1"><strong>Modelo Seleccionado:</strong> {{ values.selectedModel ||
-                                        'Sin definir' }}</p>
-                                    <p class="mb-1"><strong>Cantidad (W x L x H):</strong> {{ values.quantitiesW }} x {{
-                                        values.quantitiesL }} x {{ values.quantitiesH }}</p>
-                                </VCol>
-                                <VCol cols="12" md="6">
-                                    <p class="mb-1"><strong>Dimensiones:</strong> {{ values.width }}m x {{ values.length
-                                        }}m</p>
-                                    <p class="mb-1"><strong>Selección:</strong> {{ values.selection || 'No especificada'
-                                        }}</p>
-                                </VCol>
-                            </VRow> -->
-                        </div>
-                    </VCardText>
-                </VCard>
-
-
-            </VCol>
         </VRow>
     </section>
 </template>

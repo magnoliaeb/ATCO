@@ -10,6 +10,7 @@ const quotationSchema = yup.object().shape({
     .required('El asesor es obligatorio')
     .email('Debe ser un correo electrónico válido'),
   proyectName: yup.string().required('El proyecto es obligatorio'),
+  placeInstall: yup.string().required('El lugar de instalación es obligatorio'),
   departament: yup.number().required('El departamento es obligatorio'),
   negotiationType: yup.number().required('El tipo de negociación es obligatorio'),
   fechaEntrega: yup

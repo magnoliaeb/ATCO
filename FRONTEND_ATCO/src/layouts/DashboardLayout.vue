@@ -5,7 +5,7 @@ import TheHeader from "@/components/TheHeader.vue";
 
 <template>
   <VLayout ref="app" style="position: relative">
-    <TheHeader class="" />
+    <TheHeader />
 
     <VMain class="bg-grey-lighten-5">
       <VContainer class="pb-8 mt-4 pt-sm-8">

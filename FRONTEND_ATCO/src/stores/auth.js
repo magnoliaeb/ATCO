@@ -28,34 +28,15 @@ export const useAuthStore = defineStore(
         showConfirmButton: false,
         timer: 1500
       }).then(() => {
-        router.push({ name: 'account' })
+        router.push({ name: 'dashboard' })
       })
     }
-    async function register(credentials) {
-      const resp = await apiRequest({
-        method: 'POST',
-        url: '/auth/register',
-        data: credentials
-      })
-      if (resp.success) {
-        // Swal.fire({
-        //   icon: 'success',
-        //   title: '¡Registro exitoso!',
-        //   text: 'Por favor, revisa tu correo para confirmar tu cuenta.',
-        //   showConfirmButton: true,
-        //   confirmButtonText: 'Aceptar',
-        // });
-        router.push({ name: 'confirm-account' })
-      }
-    }
+
     async function setUser(payload) {
       user.value = payload
       isAuthenticated.value = true
     }
 
-    async function resendConfirmation(email) {
-      return await apiRequest('post', '/auth/resend-confirmation', { email })
-    }
     async function logout() {
       token.value = ''
       user.value = null
@@ -72,7 +53,6 @@ export const useAuthStore = defineStore(
       user,
       // actions
       login,
-      register,
       logout,
       setUser
     }

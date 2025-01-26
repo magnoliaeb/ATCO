@@ -10,6 +10,10 @@ const registerSchema = yup.object({
     .string()
     .required('El correo electrónico es obligatorio')
     .email('Debe ser un correo electrónico válido'),
+  role: yup
+    .string()
+    .required('El rol es obligatorio')
+    .oneOf(['admin', 'vendedor', 'ingeniero'], 'El rol debe ser Admin, Vendedor o Ingeniero'),
   password: yup.string().required('La contraseña es obligatoria'),
   confirmPassword: yup
     .string()

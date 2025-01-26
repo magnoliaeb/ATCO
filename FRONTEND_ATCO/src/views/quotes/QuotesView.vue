@@ -7,26 +7,31 @@ import { format, parseISO, differenceInDays } from 'date-fns';
 
 const { mobile } = useDisplay();
 const router = useRouter();
+
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
 const page = ref(1);
 const itemsPerPage = 10;
-const selectedMonth = ref('');
+const selectedMonth = ref(currentMonth);
 const selectedStatus = ref(''); // Nueva variable para el filtro por estado
+const selectedYear = ref(currentYear);
 
 // Lista de meses
 const months = [
-    { text: 'Enero', value: '2024-01' },
-    { text: 'Febrero', value: '2024-02' },
-    { text: 'Marzo', value: '2024-03' },
-    { text: 'Abril', value: '2024-04' },
-    { text: 'Mayo', value: '2024-05' },
-    { text: 'Junio', value: '2024-06' },
-    { text: 'Julio', value: '2024-07' },
-    { text: 'Agosto', value: '2024-08' },
-    { text: 'Septiembre', value: '2024-09' },
-    { text: 'Octubre', value: '2024-10' },
-    { text: 'Noviembre', value: '2024-11' },
-    { text: 'Diciembre', value: '2024-12' }
+    { text: 'Enero', value: 1 },
+    { text: 'Febrero', value: 2 },
+    { text: 'Marzo', value: 3 },
+    { text: 'Abril', value: 4 },
+    { text: 'Mayo', value: 5 },
+    { text: 'Junio', value: 6 },
+    { text: 'Julio', value: 7 },
+    { text: 'Agosto', value: 8 },
+    { text: 'Septiembre', value: 9 },
+    { text: 'Octubre', value: 10 },
+    { text: 'Noviembre', value: 11 },
+    { text: 'Diciembre', value: 12 }
 ];
+const years = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
 
 const statuses = ['Cotizado', 'Aprobado', 'Rechazado']; // Posibles estados para filtrar
 
@@ -146,6 +151,9 @@ const getStatusColor = (status) => {
                 <VCol cols="12" sm="4">
                     <v-select v-model="selectedMonth" :items="months" item-value="value" item-title="text"
                         label="Filtrar por mes" variant="filled"></v-select>
+                </VCol>
+                <VCol cols="12" sm="4">
+                    <v-select v-model="selectedYear" :items="years" label="Filtrar por año" variant="filled"></v-select>
                 </VCol>
                 <VCol cols="12" sm="4" class="d-flex justify-end">
                     <v-btn color="primary" variant="flat" size="large" class="text-uppercase font-weight-bold"

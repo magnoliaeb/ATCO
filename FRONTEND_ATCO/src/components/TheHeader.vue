@@ -6,7 +6,7 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const drawer = ref(true);
 import { useDisplay } from 'vuetify'
-// const authStore = useAuthStore();
+const authStore = useAuthStore();
 const { mobile } = useDisplay();
 </script>
 <template>
@@ -39,6 +39,9 @@ const { mobile } = useDisplay();
   <v-navigation-drawer v-model="drawer" :location="'left'" temporary floating :permanent="!mobile" width="250"
     class="px-4" app>
     <v-list color="primary" rounded class="">
+      <v-list-item :to="{ name: 'dashboard' }" class="my-4 d-flex" prepend-icon="mdi-view-dashboard" title="Dashboard"
+        exact>
+      </v-list-item>
       <v-list-item :to="{ name: 'users' }" class="my-4 d-flex" prepend-icon="mdi-account-group" title="Usuarios">
       </v-list-item>
       <v-list-item :to="{ name: 'quotes' }" class="my-4" prepend-icon="mdi-currency-usd"
@@ -48,7 +51,8 @@ const { mobile } = useDisplay();
     </v-list>
     <template v-slot:append>
       <div class="mb-6">
-        <v-btn variant="flat" block color="primary" size="large" class="text-uppercase font-weight-bold">
+        <v-btn @click="authStore.logout" variant="flat" block color="primary" size="large"
+          class="text-uppercase font-weight-bold">
           <VIcon class="mr-2">
             mdi-logout
           </VIcon>

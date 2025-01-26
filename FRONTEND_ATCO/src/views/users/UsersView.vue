@@ -1,28 +1,21 @@
 <script setup>
 import Swal from 'sweetalert2';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
 const { mobile } = useDisplay();
+import userAPI from '@/api/userAPI';
+
+
 
 const router = useRouter();
 const search = ref('');
 const page = ref(1);
 const itemsPerPage = 10;
 
-const users = ref([
-    { id: 1, name: 'Juan Pérez', email: 'juan@mail.com', role: 'admin', status: true },
-    { id: 2, name: 'María López', email: 'maria@mail.com', role: 'vendedor', status: false },
-    { id: 3, name: 'Carlos Sánchez', email: 'carlos@hotmail.com', role: 'vendedor', status: true },
-    { id: 4, name: 'Ana García', email: 'ana@hotmail.com', role: 'ingeniero', status: false },
-    { id: 5, name: 'Luis Torres', email: 'luis@hotmail.com', role: 'vendedor', status: true },
-    { id: 6, name: 'Pedro Fernández', email: 'pedro@mail.com', role: 'vendedor', status: true },
-    { id: 7, name: 'Ana Rodríguez', email: 'ana@mail.com', role: 'ingeniero', status: false },
-    { id: 8, name: 'Carlos Rodríguez', email: 'carlos@mail.com', role: 'vendedor', status: true },
-    { id: 9, name: 'Luisa García', email: 'luisa@mail.com', role: 'ingeniero', status: false },
-    { id: 10, name: 'Pedro Rodríguez', email: 'pedro@mail.com', role: 'vendedor', status: true },
-    { id: 11, name: 'Ana Rodríguez', email: 'ana@mail.com', role: 'ingeniero', status: false },
-]);
+
+
+const users = ref([]);
 
 const headers = [
     { title: 'ID', key: 'id' },
@@ -35,14 +28,30 @@ const headers = [
 
 const pageCount = computed(() => Math.ceil(users.value.length / itemsPerPage));
 
-const paginatedUsers = computed(() => {
-    const start = (page.value - 1) * itemsPerPage;
-    return users.value.slice(start, start + itemsPerPage);
-});
+// const paginatedUsers = computed(() => {
+//     const start = (page.value - 1) * itemsPerPage;
+//     return users.value.slice(start, start + itemsPerPage);
+// });
 
-const navigateToCreate = () => {
-    router.push('/usuarios/crear');
+onMounted(() => {
+    fetchUsers();
+})
+
+const fetchUsers = () => {
+    userAPI.getAllUsers()
+        .then((response) => {
+            console.log(response);
+            if (response.success) {
+                users.value = response.data.users; // Ahora solo entra aquí si la API responde bien
+            } else {
+                users.value = [];
+                console.log(response);
+            }
+        })
+
 };
+
+
 
 const deleteItem = (id) => {
     Swal.fire({
@@ -56,20 +65,30 @@ const deleteItem = (id) => {
         cancelButtonText: 'Cancelar'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            // await userStore.deleteUser(id);
-            Swal.fire({
-                icon: 'success',
-                title: 'Eliminado!',
-                text: 'El usuario ha sido eliminado.',
-                showConfirmButton: false,
-                timer: 1500
-            });
+            userAPI.deleteUser(id).then((response) => {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado!',
+                        text: 'El usuario ha sido eliminado.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    fetchUsers();
+                }
+            })
         }
     })
+
 };
 
-const toggleStatus = (user) => {
-    user.status = !user.status;
+const toggleStatus = (id) => {
+    userAPI.updateUserStatus(id).then((response) => {
+        if (response.success) {
+            fetchUsers();
+        }
+    })
+
 };
 
 const getAvatar = (name) => {
@@ -102,15 +121,18 @@ const getAvatar = (name) => {
 
         </VCardText>
         <VCardText>
-            <v-data-table :items="paginatedUsers" :headers="headers" :search="search" :filter-keys="['name', 'email']">
+            <v-data-table :items="users" :headers="headers" :search="search" :filter-keys="['name', 'email']">
                 <template v-slot:item.name="{ item }">
+                    <!-- {{ item.name_avatar_url }} -->
                     <v-avatar v-if="!mobile" size="35">
-                        <v-img :src="getAvatar(item.name)"></v-img>
+                        <img class="bg-green-accent-1"
+                            :src="item.name_avatar_url ? item.name_avatar_url : getAvatar(item.name)" :alt="item.name"
+                            width="35" height="35" />
                     </v-avatar>
                     <span class="ml-2">{{ item.name }}</span>
                 </template>
                 <template v-slot:item.status="{ item }">
-                    <v-btn :color="item.status ? 'green' : 'red'" @click="toggleStatus(item)" icon
+                    <v-btn :color="item.status ? 'green' : 'red'" @click="toggleStatus(item.id)" icon
                         :size="mobile ? 'x-small' : 'small'" variant="flat">
                         <v-icon>{{ item.status ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off' }}</v-icon>
                     </v-btn>

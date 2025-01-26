@@ -13,7 +13,7 @@ const authStore = useAuthStore();
 const { handleSubmit, resetForm } = useForm({
   validationSchema: loginSchema,
   initialValues: {
-    email: "michaelj@example.com",
+    email: "carlos.lopez@example.com",
     password: "mypassword",
   }
 });
@@ -25,7 +25,7 @@ const password = useField("password");
 
 const onSubmit = handleSubmit(async (values) => {
   // Llamada a la API
-  // await authStore.login(values);
+  await authStore.login(values);
   router.push({ name: 'dashboard' });
   // resetForm();
 });
