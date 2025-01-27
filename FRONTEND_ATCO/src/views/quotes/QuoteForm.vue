@@ -17,7 +17,7 @@ const { handleSubmit, handleReset } = useForm({
         departament: null,  // Logística
         client: "",
         projectName: "",
-        placeInstall: "",
+        placeInstallation: "",
         negotiationType: null, // Venta
         deliveryDate: "",
         biddingFile: "",
@@ -54,7 +54,7 @@ onMounted(() => {
 const asesor = useField("asesor");
 const client = useField("client");
 const proyectName = useField("proyectName");
-const placeInstall = useField("placeInstall");
+const placeInstallation = useField("placeInstallation");
 const negotiationType = useField("negotiationType");
 const departament = useField("departament");
 const deliveryDate = useField("deliveryDate");
@@ -224,8 +224,8 @@ function prevStep() {
                                 <!-- Campo: lugar de instalacion -->
                                 <VCol cols="12" md="12">
                                     <VTextField label="Lugar de instalación" variant="filled"
-                                        class="rounded-lg overflow-hidden" v-model="placeInstall.value.value"
-                                        type="text" :error-messages="placeInstall.errorMessage.value">
+                                        class="rounded-lg overflow-hidden" v-model="placeInstallation.value.value"
+                                        type="text" :error-messages="placeInstallation.errorMessage.value">
                                     </VTextField>
                                 </VCol>
 

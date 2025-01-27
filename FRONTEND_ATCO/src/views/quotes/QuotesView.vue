@@ -4,6 +4,9 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { format, parseISO, differenceInDays } from 'date-fns';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 
 const { mobile } = useDisplay();
 const router = useRouter();
@@ -156,7 +159,8 @@ const getStatusColor = (status) => {
                     <v-select v-model="selectedYear" :items="years" label="Filtrar por año" variant="filled"></v-select>
                 </VCol>
                 <VCol cols="12" sm="4" class="d-flex justify-end">
-                    <v-btn color="primary" variant="flat" size="large" class="text-uppercase font-weight-bold"
+                    <v-btn v-if="authStore.user?.role === 'admin' || authStore.user?.role === 'vendedor'"
+                        color="primary" variant="flat" size="large" class="text-uppercase font-weight-bold"
                         :to="{ name: 'create-quote' }">
                         <v-icon left>mdi-plus</v-icon> Crear
                     </v-btn>
@@ -187,18 +191,22 @@ const getStatusColor = (status) => {
                     {{ getDaysToApprove(item) }}
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <v-btn :size="mobile ? 'x-small' : 'small'" color="orange" variant="tonal" icon
-                        :to="{ name: 'edit-quote', params: { id: item.id } }">
-                        <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                    <v-btn :size="mobile ? 'x-small' : 'small'" class="ml-2" variant="tonal" color="error" icon
-                        @click="deleteQuote(item.id)">
-                        <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                    <v-btn :size="mobile ? 'x-small' : 'small'" class="ml-2" variant="tonal" color="info" icon
-                        :to="{ name: 'quote-details', params: { id: item.id } }">
-                        <v-icon>mdi-folder-open</v-icon>
-                    </v-btn>
+                    <div class="d-flex">
+                        <v-btn v-if="authStore.user?.role === 'admin' || authStore.user?.role === 'ingeniero'"
+                            :size="mobile ? 'x-small' : 'small'" color="orange" variant="tonal" icon
+                            :to="{ name: 'edit-quote', params: { id: item.id } }">
+                            <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                        <v-btn v-if="authStore.user?.role === 'admin'" :size="mobile ? 'x-small' : 'small'" class="ml-2"
+                            variant="tonal" color="error" icon @click="deleteQuote(item.id)">
+                            <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                        <v-btn :size="mobile ? 'x-small' : 'small'" class="ml-2" variant="tonal" color="info" icon
+                            :to="{ name: 'quote-details', params: { id: item.id } }">
+                            <v-icon>mdi-folder-open</v-icon>
+                        </v-btn>
+
+                    </div>
                 </template>
                 <template v-slot:bottom>
                     <div class="text-center pt-2">

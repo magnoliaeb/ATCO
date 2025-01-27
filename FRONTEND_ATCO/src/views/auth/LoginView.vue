@@ -19,13 +19,18 @@ const { handleSubmit, resetForm } = useForm({
 });
 
 const showPassword = ref(false);
+const isLoading = ref(false);
 // Campos individuales
 const email = useField("email");
 const password = useField("password");
 
 const onSubmit = handleSubmit(async (values) => {
   // Llamada a la API
-  await authStore.login(values);
+  isLoading.value = true;
+  await authStore.login(values).finally(() => {
+    isLoading.value = false;
+
+  });
   router.push({ name: 'dashboard' });
   // resetForm();
 });
@@ -65,7 +70,8 @@ const onSubmit = handleSubmit(async (values) => {
           <!-- Botones -->
           <VRow>
             <VCol cols="12">
-              <VBtn block class="text-uppercase font-weight-bold" flat size="large" color="primary" type="submit">
+              <VBtn block :loading="isLoading" class="text-uppercase font-weight-bold" flat size="large" color="primary"
+                type="submit">
                 Iniciar Sesión
               </VBtn>
             </VCol>

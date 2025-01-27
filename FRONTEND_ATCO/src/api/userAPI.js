@@ -1,10 +1,12 @@
 import { apiRequest } from './axios'
 
 export default {
-  getAllUsers: async () => {
+  getAllUsers: async (filters) => {
+    console.log(filters)
     return apiRequest({
       method: 'GET',
-      url: '/users'
+      url: '/users',
+      data: filters
     })
   },
 

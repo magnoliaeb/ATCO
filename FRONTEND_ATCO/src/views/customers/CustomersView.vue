@@ -4,18 +4,17 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
 const { mobile } = useDisplay();
-import userAPI from '@/api/userAPI';
+import customerAPI from '@/api/customerAPI';
 import { debounce } from 'lodash';
 
 
 
 const router = useRouter();
-const search = ref('');
 
-const users = ref([]);
+const search = ref('');
+const customers = ref([]);
 const isLoadingTable = ref(false);
 const isLoadingStatus = ref(false);
-const selectedId = ref(null);
 const page = ref(1);
 let totalPages = ref(1);
 
@@ -28,7 +27,7 @@ const filters = computed(() => ({
 
 watch(search, () => {
     page.value = 1;
-    fetchUsers();
+    fetchCustomers();
 })
 
 
@@ -37,8 +36,7 @@ const headers = [
     { title: 'ID', key: 'id' },
     { title: 'Nombre', key: 'name' },
     { title: 'Email', key: 'email' },
-    { title: 'Rol', key: 'role' },
-    { title: 'Estado', key: 'status', sortable: false, align: 'center' },
+    { title: 'Teléfono', key: 'phone' },
     { title: 'Acciones', key: 'actions', sortable: false }
 ];
 
@@ -49,37 +47,37 @@ const headers = [
 // });
 
 onMounted(() => {
-    fetchUsers();
+    fetchCustomers();
 });
 
 
 
-const fetchUsers = debounce(() => {
+const fetchCustomers = debounce(() => {
     isLoadingTable.value = true;
-    userAPI.getAllUsers(filters.value)
+    customerAPI.getAllCustomers(filters.value)
         .then((response) => {
             console.log(response);
             if (response.success) {
-                users.value = response.data.users;
+                customers.value = response.data.customers;
                 totalPages.value = response.data.pagination.totalPages
             } else {
-                users.value = [];
+                customers.value = [];
             }
         }).finally(() => {
             isLoadingTable.value = false
         })
 }, 500);
 
-const loadfetchUsers = (newPage) => {
+const loadfetchCustomers = (newPage) => {
     // console.log(newPage);
     filters.value.page = newPage;
-    fetchUsers();
+    fetchCustomers();
 }
 
 
 const deleteItem = (id) => {
     Swal.fire({
-        title: 'Estas seguro de eliminar este usuario?',
+        title: 'Estas seguro de eliminar este cliente?',
         text: "No podras revertir esta accion!",
         icon: 'warning',
         showCancelButton: true,
@@ -89,16 +87,16 @@ const deleteItem = (id) => {
         cancelButtonText: 'Cancelar'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            userAPI.deleteUser(id).then((response) => {
+            customerAPI.deleteCustomer(id).then((response) => {
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Eliminado!',
-                        text: 'El usuario ha sido eliminado.',
+                        text: 'El cliente ha sido eliminado.',
                         showConfirmButton: false,
                         timer: 1500
                     });
-                    fetchUsers();
+                    fetchCustomers();
                 }
             })
         }
@@ -106,18 +104,6 @@ const deleteItem = (id) => {
 
 };
 
-const toggleStatus = (id) => {
-    selectedId.value = id
-    isLoadingStatus.value = true
-    userAPI.updateUserStatus(id).then((response) => {
-        if (response.success) {
-            fetchUsers();
-        }
-    }).finally(() => {
-        isLoadingStatus.value = false
-    })
-
-};
 
 const getAvatar = (name) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&`;
@@ -129,7 +115,7 @@ const getAvatar = (name) => {
     <v-card flat class="pa-md-4 rounded-lg">
         <VCardText>
             <h1 class="page-title mb-3 mb-sm-6">
-                Usuarios
+                Clientes
             </h1>
             <VRow class="justify-space-between">
                 <VCol cols="12" md="6" class="order-1 order-sm-0">
@@ -139,7 +125,7 @@ const getAvatar = (name) => {
                 </VCol>
                 <VCol cols="12" sm="auto" class="d-flex align-end order-0">
                     <v-btn color="primary" variant="flat" size="large" class="text-uppercase font-weight-bold"
-                        :to="{ name: 'create-user' }">
+                        :to="{ name: 'create-customer' }">
                         <v-icon left>mdi-plus</v-icon> Agregar
                     </v-btn>
 
@@ -149,7 +135,7 @@ const getAvatar = (name) => {
 
         </VCardText>
         <VCardText>
-            <v-data-table :items="users" :headers="headers" :loading="isLoadingTable">
+            <v-data-table :items="customers" :headers="headers" :loading="isLoadingTable">
                 <template v-slot:item.name="{ item }">
                     <!-- {{ item.name_avatar_url }} -->
                     <v-avatar v-if="!mobile" size="35">
@@ -159,16 +145,11 @@ const getAvatar = (name) => {
                     </v-avatar>
                     <span class="ml-2">{{ item.name }}</span>
                 </template>
-                <template v-slot:item.status="{ item }">
-                    <v-btn :loading="isLoadingStatus && item.id === selectedId" :color="item.status ? 'green' : 'red'"
-                        @click="toggleStatus(item.id)" icon :size="mobile ? 'x-small' : 'small'" variant="flat">
-                        <v-icon>{{ item.status ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off' }}</v-icon>
-                    </v-btn>
-                </template>
+
                 <template v-slot:item.actions="{ item }">
                     <div class="d-flex align-center" v-if="item.role !== 'admin'">
                         <v-btn :size="mobile ? 'x-small' : 'small'" color="orange" variant="tonal" icon
-                            :to="{ name: 'edit-user', params: { id: item.id } }">
+                            :to="{ name: 'edit-customer', params: { id: item.id } }">
                             <v-icon>mdi-pencil</v-icon>
                         </v-btn>
                         <v-btn :size="mobile ? 'x-small' : 'small'" class="ml-2" variant="tonal" color="error" icon
@@ -182,7 +163,7 @@ const getAvatar = (name) => {
                     <div class="text-center pt-2">
                         <v-pagination :density="mobile ? 'compact' : 'default'" color="secondary" :total-visible="3"
                             v-model="page" rounded="circle" :length="totalPages"
-                            @update:modelValue="loadfetchUsers"></v-pagination>
+                            @update:modelValue="loadfetchCustomers"></v-pagination>
                     </div>
                 </template>
             </v-data-table>

@@ -1,3 +1,5 @@
+import authAPI from '@/api/authAPI'
+import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -22,9 +24,7 @@ const router = createRouter({
     {
       path: '/dashboard',
       component: () => import('../layouts/DashboardLayout.vue'),
-      meta: {
-        requiresAuth: true
-      },
+      meta: { requiresAuth: true },
       children: [
         {
           path: '',
@@ -32,7 +32,7 @@ const router = createRouter({
           component: () => import('../views/dashboard/DashboardView.vue')
         },
         {
-          path: '/usuarios',
+          path: 'usuarios',
           children: [
             {
               path: '',
@@ -52,8 +52,27 @@ const router = createRouter({
           ]
         },
         {
-          path: '/cotizaciones',
-          // component: () => import('../views/quotes/QuotesView.vue')
+          path: 'clientes',
+          children: [
+            {
+              path: '',
+              name: 'customers',
+              component: () => import('../views/customers/CustomersView.vue')
+            },
+            {
+              path: 'crear',
+              name: 'create-customer',
+              component: () => import('../views/customers/CustomerForm.vue')
+            },
+            {
+              path: 'editar/:id',
+              name: 'edit-customer',
+              component: () => import('../views/customers/CustomerForm.vue')
+            }
+          ]
+        },
+        {
+          path: 'cotizaciones',
           children: [
             {
               path: '',
@@ -78,7 +97,7 @@ const router = createRouter({
           ]
         },
         {
-          path: '/catalogo',
+          path: 'catalogo',
           children: [
             {
               path: '',
@@ -99,14 +118,6 @@ const router = createRouter({
         }
       ]
     },
-    // {
-    //   path: '/mi-cuenta',
-    //   name: 'account',
-    //   component: () => import('../views/account/AccountView.vue'),
-    //   meta: {
-    //     requiresAuth: true
-    //   }
-    // }
     {
       path: '/:catchAll(.*)*',
       name: 'not-found',
@@ -115,34 +126,39 @@ const router = createRouter({
   ]
 })
 
-// router.beforeEach(async (to, from, next) => {
-//   const authStore = useAuthStore();
-//   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-//   console.log(authStore.isAuthenticated);
-//   console.log(authStore.user);
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+  // console.log(authStore.isAuthenticated)
+  // console.log(authStore.user)
 
-//   if (requiresAuth) {
-//     if (!authStore.isAuthenticated) {
-//       console.log(1);
-//       return next({ name: 'login' });
-//     }
+  if (requiresAuth) {
+    if (!authStore.isAuthenticated) {
+      console.log(1)
+      return next({ name: 'login' }) // ✅ Se detiene aquí
+    }
 
-//     console.log(2);
-//     try {
-//       const resp = await authAPI.checkAuth()
-//       await authStore.setUser(resp.data);
-//       console.log(resp);
-//       return next();
+    try {
+      const response = await authAPI.checkAuth()
+      console.log(response)
+      
+      if (response.success) {
+        authStore.setUser(response.data)
+        next() // ✅ Solo se ejecuta una vez
+      } else {
+        console.log('error')
+        next({ name: 'login' }) // ✅ Solo se ejecuta una vez
+      }
+    } catch (error) {
+      console.error('Error en authAPI.checkAuth:', error)
+      next({ name: 'login' }) // ✅ Manejo de error
+    }
 
-//     } catch (error) {
-//       console.log(error);
-//       return next({ name: 'login' });
+    return // ✅ Detiene la ejecución aquí
+  }
 
-//     }
-//   }
+  next() // ✅ Solo si `requiresAuth` es `false`
+})
 
-//   console.log(3);
-//   next();
-// });
 
 export default router

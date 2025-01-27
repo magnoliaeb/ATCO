@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser'
 
 import authRoute from './routes/authRoute.js'
 import userRoute from './routes/userRoute.js'
+import customerRoute from './routes/customerRoute.js'
+
 import departamentRoute from './routes/departamentRoute.js'
 import negotiationTypeRoute from './routes/negotiationTypeRoutes.js'
 
@@ -36,6 +38,7 @@ app.get('/api', (req, res) => {
 
 app.use('/api/auth', authRoute)
 app.use('/api/users', userRoute)
+app.use('/api/customers', customerRoute)
 app.use('/api/departaments', departamentRoute)
 app.use('/api/negotiation-types', negotiationTypeRoute)
 

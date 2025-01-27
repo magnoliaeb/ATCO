@@ -3,17 +3,31 @@ import * as yup from 'yup'
 const registerSchema = yup.object({
   name: yup
     .string()
-    .required('El nombre es obligatorio')
     .min(3, 'El nombre debe tener al menos 3 caracteres')
-    .max(50, 'El nombre no puede tener más de 50 caracteres'),
+    .max(50, 'El nombre debe tener como máximo 50 caracteres')
+    .required('El nombre es requerido'),
+
   email: yup
     .string()
-    .required('El correo electrónico es obligatorio')
-    .email('Debe ser un correo electrónico válido'),
+    .email('El email no es válido')
+    .max(255, 'El email no puede tener más de 255 caracteres')
+    .required('El email es requerido'),
+
+  password: yup
+    .string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .max(100, 'La contraseña debe tener como máximo 100 caracteres')
+    .required('La contraseña es requerida'),
+
   role: yup
     .string()
-    .required('El rol es obligatorio')
-    .oneOf(['admin', 'vendedor', 'ingeniero'], 'El rol debe ser Admin, Vendedor o Ingeniero'),
+    .oneOf(['admin', 'ingeniero', 'vendedor'], 'El rol debe ser admin, ingeniero o vendedor')
+    .required('El rol es requerido'),
+
+  status: yup
+    .boolean()
+    .oneOf([true, false], 'El estado debe ser true o false')
+    .required('El estado es requerido'),
   password: yup.string().required('La contraseña es obligatoria'),
   confirmPassword: yup
     .string()

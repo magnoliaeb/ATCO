@@ -3,21 +3,9 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useField, useForm } from "vee-validate";
 import Swal from "sweetalert2";
-import registerSchema from "@/schemas/registerSchema";
-import userAPI from "@/api/userAPI";
-import { is } from "date-fns/locale";
 
-// Opciones de roles y estado
-const roles = [
-    { text: "Vendedor", value: "vendedor" },
-    // { text: "Administrador", value: "admin" },
-    { text: "Ingeniero", value: "ingeniero" }
-];
-
-const statusItems = [
-    { text: "Activo", value: true },
-    { text: "Inactivo", value: false }
-];
+import customerSchema from "@/schemas/customerSchema";
+import customerAPI from "@/api/customerAPI";
 
 // Router
 const router = useRouter();
@@ -25,76 +13,71 @@ const route = useRoute();
 
 // Estado del formulario
 const isLoading = ref(false);
-const editedUserId = ref({});
-const titleForm = computed(() => (editedUserId.value ? "Editar usuario" : "Crear usuario"));
+const editedCustomerId = ref({});
+const titleForm = computed(() => (editedCustomerId.value ? "Editar cliente" : "Crear cliente"));
 
 // Configuración del formulario
 const { handleSubmit, handleReset, setValues } = useForm({
-    validationSchema: registerSchema,
+    validationSchema: customerSchema,
     initialValues: {
         name: "Sonrisita",
         email: "sonrisita@example.com",
-        password: "password",
-        confirmPassword: "password",
-        role: "vendedor",
-        status: true
+        phone: "+52 12 4056 7890",
+        address: "Cancun, Quintana Roo, Mexico",
     }
 });
 
 // Campos del formulario
 const name = useField("name");
 const email = useField("email");
-const password = useField("password");
-const confirmPassword = useField("confirmPassword");
-const role = useField("role");
-const status = useField("status");
+const phone = useField("phone");
+const address = useField("address");
 
-// Cargar usuario si existe
+// Cargar cliente si existe
 const { id } = route.params;
 onMounted(() => {
     if (id) {
-        fetchUser(id);
+        fetchCustomer(id);
     } else {
         resetForm();
     }
 });
 
-// Obtener datos del usuario
-const fetchUser = (id) => {
-    userAPI.getUserById(id).then((response) => {
+// Obtener datos del cliente
+const fetchCustomer = (id) => {
+    customerAPI.getCustomerById(id).then((response) => {
         // console.log(response.data);
         if (response.success) {
-            editedUserId.value = response.data.id;
+            editedCustomerId.value = response.data.id;
             setValues({
                 name: response.data.name,
                 email: response.data.email,
-                password: response.data.password,
-                confirmPassword: response.data.password,
-                role: response.data.role,
-                status: response.data.status
+                phone: response.data.phone,
+                address: response.data.address
+
             });
         } else {
-            router.push({ name: "users" });
+            router.push({ name: "customers" });
         }
     });
 };
 
-// Guardar usuario (crear o actualizar)
-const saveUser = (values) => {
+// Guardar cliente (crear o actualizar)
+const saveCustomer = (values) => {
     isLoading.value = true;
 
-    if (editedUserId.value) {
+    if (editedCustomerId.value) {
 
-        userAPI.updateUser(editedUserId.value, values).then((response) => {
+        customerAPI.updateCustomer(editedCustomerId.value, values).then((response) => {
             if (response.success) {
                 Swal.fire({
                     icon: "success",
-                    title: "Usuario actualizado",
-                    text: "El usuario ha sido actualizado correctamente",
+                    title: "Cliente actualizado",
+                    text: "El cliente ha sido actualizado correctamente",
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    router.push({ name: "users" });
+                    router.push({ name: "customers" });
                 });
             }
             isLoading.value = false;
@@ -103,17 +86,17 @@ const saveUser = (values) => {
 
     } else {
 
-        userAPI.createUser(values).then((response) => {
+        customerAPI.createCustomer(values).then((response) => {
             console.log(response);
             if (response.success) {
                 Swal.fire({
                     icon: "success",
-                    title: "Usuario creado",
-                    text: "El usuario ha sido creado correctamente",
+                    title: "Cliente creado",
+                    text: "El cliente ha sido creado correctamente",
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    router.push({ name: "users" });
+                    router.push({ name: "customers" });
                 });
             }
             isLoading.value = false;
@@ -123,12 +106,12 @@ const saveUser = (values) => {
 
 // Enviar formulario
 const onSubmit = handleSubmit(async ({ confirmPassword, ...values }) => {
-    saveUser(values);
+    saveCustomer(values);
 });
 
 // Resetear formulario
 function resetForm() {
-    editedUserId.value = null;
+    editedCustomerId.value = null;
     handleReset();
 }
 </script>
@@ -153,34 +136,24 @@ function resetForm() {
                                 class="rounded-lg overflow-hidden" v-model="email.value.value" type="email"
                                 :error-messages="email.errorMessage.value"></VTextField>
                         </VCol>
-                        <VCol cols="12" md="6">
-                            <VSelect id="role" label="Rol" variant="filled" class="rounded-lg overflow-hidden"
-                                v-model="role.value.value" :items="roles" item-value="value" item-title="text"
-                                :error-messages="role.errorMessage.value"></VSelect>
-                        </VCol>
-                        <VCol cols="12" md="6">
-                            <VSelect id="status" label="Estado" variant="filled" class="rounded-lg overflow-hidden"
-                                v-model="status.value.value" :items="statusItems" item-value="value" item-title="text"
-                                :error-messages="status.errorMessage.value"></VSelect>
 
-                        </VCol>
                         <VCol cols="12">
-                            <VTextField id="password" label="Contraseña" variant="filled"
-                                class="rounded-lg overflow-hidden" v-model="password.value.value" type="password"
-                                :error-messages="password.errorMessage.value"></VTextField>
+                            <VTextField id="phone" label="Telefono" variant="filled" class="rounded-lg overflow-hidden"
+                                v-model="phone.value.value" type="text" :error-messages="phone.errorMessage.value">
+                            </VTextField>
                         </VCol>
                         <VCol>
-                            <VTextField id="confirmPassword" label="Confirmar Contraseña" variant="filled"
-                                class="rounded-lg overflow-hidden" v-model="confirmPassword.value.value" type="password"
-                                :error-messages="confirmPassword.errorMessage.value"></VTextField>
+                            <VTextarea id="address" label="Direccion" variant="filled"
+                                class="rounded-lg overflow-hidden" v-model="address.value.value" type="text"
+                                :error-messages="address.errorMessage.value"></VTextarea>
                         </VCol>
                         <VCol cols="12">
                             <VBtn :loading="isLoading" class="text-uppercase font-weight-bold" type="submit" block
                                 color="primary" elevation="0" size="large">Confirmar</VBtn>
                         </VCol>
                         <VCol cols="12">
-                            <VBtn :to="{ name: 'users' }" class="text-uppercase font-weight-bold" type="submit" block
-                                color="tertiary" elevation="0" variant="text" size="large">Cancelar</VBtn>
+                            <VBtn :to="{ name: 'customers' }" class="text-uppercase font-weight-bold" type="submit"
+                                block color="tertiary" elevation="0" variant="text" size="large">Cancelar</VBtn>
                         </VCol>
                     </VRow>
                 </VForm>

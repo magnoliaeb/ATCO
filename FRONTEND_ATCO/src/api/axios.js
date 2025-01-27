@@ -59,8 +59,12 @@ export function apiRequest({ method, url, data = {} }) {
   const options = {
     method,
     url,
-    headers,
-    data
+    headers
+  }
+  if (method.toLowerCase() === 'get') {
+    options.params = data
+  } else {
+    options.data = data
   }
   return apiClient(url, options)
     .then((response) => {

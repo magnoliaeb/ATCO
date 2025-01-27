@@ -31,7 +31,7 @@ export default {
         return res.status(400).json({
           success: false,
           message: 'El usuario no existe',
-          error: 'USER_NOT_FOUND'
+          error: 'NOT_FOUND'
         })
       }
 
@@ -88,7 +88,7 @@ export default {
       return res.status(404).json({
         success: false,
         message: 'El usuario no existe',
-        error: 'USER_NOT_FOUND'
+        error: 'NOT_FOUND'
       })
     }
     res.status(200).json({

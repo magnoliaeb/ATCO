@@ -26,7 +26,7 @@ const { mobile } = useDisplay();
           <VIcon class="mr-1 mr-sm-3" size="30">mdi-account-circle</VIcon>
           <div class=" d-sm-flex flex-column text-left">
             <span class="d-inline-block mb-1">Bienvenido</span>
-            <span class=" d-sm-inline-block text-capitalize">maria perez</span>
+            <span class=" d-sm-inline-block text-capitalize">{{ authStore.user?.name }}</span>
           </div>
         </VBtn>
 
@@ -42,12 +42,15 @@ const { mobile } = useDisplay();
       <v-list-item :to="{ name: 'dashboard' }" class="my-4 d-flex" prepend-icon="mdi-view-dashboard" title="Dashboard"
         exact>
       </v-list-item>
-      <v-list-item :to="{ name: 'users' }" class="my-4 d-flex" prepend-icon="mdi-account-group" title="Usuarios">
+      <v-list-item :to="{ name: 'users' }" v-if="authStore.user?.role === 'admin'" class="my-4 d-flex"
+        prepend-icon="mdi-account-group" title="Usuarios">
       </v-list-item>
       <v-list-item :to="{ name: 'quotes' }" class="my-4" prepend-icon="mdi-currency-usd"
         title="Corizaciones"></v-list-item>
       <v-list-item :to="{ name: 'catalog' }" class="my-4" prepend-icon="mdi-format-list-bulleted"
         title="Catálogo"></v-list-item>
+      <v-list-item :to="{ name: 'customers' }" v-if="authStore.user?.role === 'admin'" class="my-4"
+        prepend-icon="mdi-account-multiple" title="Clientes"></v-list-item>
     </v-list>
     <template v-slot:append>
       <div class="mb-6">
